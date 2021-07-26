@@ -157,7 +157,7 @@ fit_tmp <- lm(All_rating ~ . , data=netflix_original)
 vif(fit_tmp)
 ```
 
-### 드라마데이터(겹친 변수가 존재 aliased)
+### 드라마데이터
 
 ```{r}
  fit_tmp <- lm(All_rating ~ . , data=netflix_drama)
@@ -178,15 +178,15 @@ Age와 Harmful_themes에서 다중공선성 존재 이후 분석에서 Harmful_t
 ### 종합데이터
 
 ```{r}
-netflix_original <- netflix_original[,-6] # Harmful_themes제거
+netflix_original <- netflix_original[,-4] # Age제거
 fit_tmp <- lm(All_rating ~ . , data=netflix_original)
 vif(fit_tmp)
 ```
 
-### 드라마데이터(겹친 변수가 존재 aliased)
+### 드라마데이터
 
 ```{r}
-netflix_drama <- netflix_drama[,c(-6,-9)] # Harmful_themes, Profanity제거
+netflix_drama <- netflix_drama[,c(-4,-9)] # Harmful_themes, Profanity제거
 fit_tmp <- lm(All_rating ~ . , data=netflix_drama)
 vif(fit_tmp)
 ```
@@ -194,7 +194,7 @@ vif(fit_tmp)
 ### 영화데이터
 
 ```{r}
-netflix_movie <- netflix_movie[,-6] # Harmful_themes제거
+netflix_movie <- netflix_movie[,-4] # Age제거
 fit_tmp <- lm(All_rating ~ . , data=netflix_movie)
 vif(fit_tmp)
 ```
@@ -261,7 +261,9 @@ summary(fit_OLS_original) # Summary() 함수는 중심화 경향과 퍼짐정도
 
 -   Director_max_award
 
--   Lewdness높음
+-   Harmful_themes높음
+
+-   Harmful_themes보통
 
 -   Lewdness다소높음
 
@@ -269,7 +271,7 @@ summary(fit_OLS_original) # Summary() 함수는 중심화 경향과 퍼짐정도
 
 -   Fear높음
 
--   Drugs높음
+-   Fear보통
 
 #### 유의한 factor
 
@@ -284,8 +286,6 @@ anova(fit_OLS_original) # 유의한 factor를 확인하기 위해 ANOVA함수를
 -   Mean_Length
 
 -   Director_max_award
-
--   Age
 
 -   Year
 
@@ -311,7 +311,8 @@ fit_OLS_drama <- lm(All_rating ~ . , data=netflix_drama)
 summary(fit_OLS_drama)
 ```
 
--   없음
+-   Fear높음
+-   Immatatable다소높음
 
 #### 유의한 factor
 
@@ -320,8 +321,6 @@ anova(fit_OLS_drama)
 ```
 
 -   Mean_Length
-
--   Age
 
 -   Harmful_themes
 
@@ -343,13 +342,15 @@ summary(fit_OLS_movie)
 
 -   Director_max_award
 
--   Age전체관람가
+-   Harmful_themes보통
 
 -   Lewdness다소높음
 
 -   Lewdness보통
 
 -   Fear높음
+
+-   Immatatable다소높음
 
 ### 유의한 factor
 
@@ -359,9 +360,9 @@ anova(fit_OLS_movie)
 
 -   Director_max_award
 
--   Age
-
 -   Year
+
+-   Harmful_themes
 
 -   Lewdness
 
@@ -391,13 +392,44 @@ summary(fit_m_original) # MASS패키지의 함수인 rlm을 사용하여 로버�
 
 -   Director_max_award
 
--   Lewdness높음
+-   Harmful_themes보통
+
+-   Profanity보통
 
 -   Fear높음
 
+### 유의한 factor
+
 ```{r}
-anova(fit_m_original)
+fit_m_original_anova <- anova(fit_m_original)
+fit_m_original_anova
 ```
+
+```{r}
+original_MSR <- fit_m_original_anova$`Sum Sq`[11] / 447
+original_MS <- fit_m_original_anova$`Mean Sq`
+original_MS[11] <- original_MSR
+original_df <- fit_m_original_anova$Df
+original_F <- numeric(10)
+original_P <- numeric(10)
+for(i in 1:10){
+  original_F[i] <- original_MS[i] / original_MS[11]
+  original_P[i] <- pf(q=original_F[i], df1= original_df[i], df2= 447, lower.tail = F)
+}
+original_P
+```
+
+-   Mean_Length
+
+-   Director_max_award
+
+-   Harmful_themes
+
+-   Lewdness
+
+-   Fear
+
+-   Drugs
 
 #### 모델 유의성 확인
 
@@ -406,16 +438,49 @@ par(mfrow = c(2,2))
 plot(fit_m_original)
 ```
 
-### 드라마 데이터(rlm이 중복쌍을 지원 안함)
+### 드라마 데이터
 
 ```{r}
 fit_m_drama <- rlm(All_rating ~ . , data=netflix_drama)
 summary(fit_m_drama)
 ```
 
+-   Harmful_themes다소높음
+
+-   Fear높음
+
+-   Fear다소높음
+
+-   Fear보통
+
+-   Drugs다소높음
+
+-   Immatatable다소높음
+
+### 유의한 factor
+
 ```{r}
-anova(fit_m_drama)
+fit_m_drama_anova <- anova(fit_m_drama)
+fit_m_drama_anova
 ```
+
+```{r}
+drama_MSR <- fit_m_drama_anova$`Sum Sq`[10] / 55
+drama_MS <- fit_m_drama_anova$`Mean Sq`
+drama_MS[10] <- drama_MSR
+drama_df <- fit_m_drama_anova$Df
+drama_F <- numeric(9)
+drama_P <- numeric(9)
+for(i in 1:9){
+  drama_F[i] <- drama_MS[i] / drama_MS[10]
+  drama_P[i] <- pf(q=drama_F[i], df1= drama_df[i], df2= 55, lower.tail = F)
+}
+drama_P
+```
+
+-   Mean_Length
+
+-   Harmful_themes
 
 ```{r}
 # par(mfrow = c(2,2))
@@ -433,17 +498,42 @@ summary(fit_m_movie)
 
 -   Director_max_award
 
--   Age전체관람가
-
 -   Lewdness다소높음
 
 -   Lewdness보통
 
 -   Fear높음
 
+### 유의한 factor
+
 ```{r}
-anova(fit_m_movie)
+fit_m_movie_anova <- anova(fit_m_movie)
+fit_m_movie_anova
 ```
+
+```{r}
+movie_MSR <- fit_m_movie_anova$`Sum Sq`[11] / 360
+movie_MS <- fit_m_movie_anova$`Mean Sq`
+movie_MS[11] <- original_MSR
+movie_df <- fit_m_movie_anova$Df
+movie_F <- numeric(10)
+movie_P <- numeric(10)
+for(i in 1:10){
+  movie_F[i] <- movie_MS[i] / movie_MS[11]
+  movie_P[i] <- pf(q=movie_F[i], df1= movie_df[i], df2= 360, lower.tail = F)
+}
+movie_P
+```
+
+-   Director_max_award
+
+-   Year
+
+-   Harmful_themes
+
+-   Lewdness
+
+-   Fear
 
 #### 모델 유의성 확인
 
